@@ -32,7 +32,7 @@ cd teamchat-app
 
 ## 初回起動（5手）
 
-> ⚠️ **先に、動かしっぱなしの別アプリを止めてください。**`post-app-practice` などが起動したままだと、80番ポートと3306番ポートがぶつかって `sail up` が落ちます。そのフォルダで `./vendor/bin/sail stop` を実行してから、こちらを起動してください。
+> ⚠️ **先に、80番ポートと3306番ポートを使っている別のアプリを止めてください。**`post-app-practice` などを動かしたままだと、**3手目**（`sail up -d`）で `Bind for 0.0.0.0:80 failed: port is already allocated` と言われて起動しません。そのフォルダで `./vendor/bin/sail stop` を実行してから始めてください。
 
 **1. ライブラリを取ってくる**
 
@@ -58,6 +58,14 @@ cp .env.example .env
 ./vendor/bin/sail up -d
 ```
 
+**そのあと30秒ほど待ってください。**コンテナが `Up` になっても、データベースはまだ中で立ち上がっている途中です。待たずに次へ進むと、5手目でこうなります。
+
+```
+SQLSTATE[HY000] [2002] Connection refused (Connection: mysql, ...)
+```
+
+`./vendor/bin/sail ps` の `mysql` の欄が `Up (healthy)` に変われば、確実に繋がります（手元では30秒でした）。**この文言が出たときは、少し待って同じコマンドをもう一度打てば通ります。**
+
 **4. アプリケーションキーを作る**
 
 ```bash
@@ -73,6 +81,17 @@ cp .env.example .env
 ブラウザで <http://localhost> を開いて、Laravelの初期画面が出れば準備完了です。
 
 > 💡 5手目に `--seed` は付けません。初期データは、これから機能を作りながら自分で積んでいきます。
+
+---
+
+## 止める・片づける
+
+```bash
+./vendor/bin/sail stop      # 止めるだけ（データは残ります）
+./vendor/bin/sail down -v   # 止めて、データベースの中身ごと消す
+```
+
+別のアプリを動かしたいときは `sail stop` で止めてください（ポートが空きます）。`down -v` のあとは、3手目（`sail up -d`）からやり直します。
 
 ---
 
